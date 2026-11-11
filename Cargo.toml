@@ -1,0 +1,13 @@
+[package]
+name = "rustcher"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crossterm = "0.29.0"
+freedesktop-desktop-entry = "0.8.3"
+freedesktop-icons = "0.4.0"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg"] }
+nucleo = "0.5.0"
+ratatui = "0.30.2"
+ratatui-image = { version = "11.1.0", default-features = false, features = ["crossterm", "image-defaults"] }
