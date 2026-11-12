@@ -2,6 +2,7 @@ mod action;
 mod app;
 mod desktop;
 mod list;
+mod matcher;
 mod ui;
 
 use app::App;

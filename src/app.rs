@@ -1,6 +1,6 @@
 use std::{io, time::Duration};
 
-use crate::{action::Action, desktop::AppEntry, list::List, ui};
+use crate::{action::Action, desktop, list::List, matcher::FuzzyMatcher, ui};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::{DefaultTerminal, Frame};
 use ratatui_image::picker::Picker;
@@ -8,18 +8,27 @@ use ratatui_image::picker::Picker;
 pub struct App {
     pub exit: bool,
     pub list: List,
-    pub appentry: AppEntry,
+    pub input: String,
     pub picker: Picker,
+    matcher: FuzzyMatcher,
 }
 
 impl App {
     pub fn new() -> Self {
         let picker = Picker::from_query_stdio().unwrap_or_else(|_| Picker::halfblocks());
+        let entries = desktop::load_desktop_entries(&picker);
         Self {
-            list: List::new(&picker),
             exit: false,
+            list: List::new(entries),
+            input: String::new(),
+            matcher: FuzzyMatcher::new(),
             picker,
         }
+    }
+
+    fn refilter(&mut self) {
+        let indices = self.matcher.filter(&self.input, self.list.names());
+        self.list.set_visible(indices);
     }
 
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
@@ -52,6 +61,7 @@ impl App {
         match (key.modifiers, key.code) {
             (KeyModifiers::NONE, KeyCode::Esc) => Action::Quit,
             (KeyModifiers::NONE, KeyCode::Enter) => Action::Run,
+            (KeyModifiers::NONE, KeyCode::Backspace) => Action::RemoveChar,
             (KeyModifiers::CONTROL, KeyCode::Char('j')) => Action::Down,
             (KeyModifiers::CONTROL, KeyCode::Char('k')) => Action::Up,
             (KeyModifiers::NONE, KeyCode::Char(c)) => Action::InsertChar(c),
@@ -62,10 +72,22 @@ impl App {
     fn update(&mut self, action: Action) {
         match action {
             Action::Quit => self.exit = true,
-            Action::Run => self.desktop.launch().expect("cannot run"),
+            Action::Run => {
+                if let Some(entry) = self.list.selected() {
+                    let _ = entry.launch();
+                    self.exit = true;
+                }
+            }
             Action::Down => self.list.down(),
             Action::Up => self.list.up(),
-            Action::InsertChar(c) => todo!(),
+            Action::InsertChar(c) => {
+                self.input.push(c);
+                self.refilter();
+            }
+            Action::RemoveChar => {
+                self.input.pop();
+                self.refilter();
+            }
             Action::Tick | Action::None => {}
         }
     }

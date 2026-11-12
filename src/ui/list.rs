@@ -9,7 +9,7 @@ use ratatui::{
 use ratatui_image::Image;
 
 pub fn render_apps_list(
-    items: &[crate::list::Item],
+    items: &[&crate::desktop::AppEntry],
     selected_index: Option<usize>,
     area: Rect,
     buf: &mut Buffer,
