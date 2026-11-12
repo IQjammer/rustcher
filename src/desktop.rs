@@ -3,8 +3,9 @@ use image::DynamicImage;
 use ratatui::layout::Size;
 use ratatui_image::{Resize, picker::Picker, protocol::Protocol};
 use std::{
+    os::unix::process::CommandExt,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
 };
 
 pub struct AppEntry {
@@ -16,14 +17,20 @@ pub struct AppEntry {
 
 impl AppEntry {
     pub fn launch(&self) -> std::io::Result<()> {
-        let clean: Vec<&str> = self
-            .exec
-            .split_whitespace()
-            .filter(|arg| !arg.starts_with('%'))
+        let parts: Vec<String> = shlex::split(&self.exec)
+            .unwrap_or_default()
+            .into_iter()
+            .filter(|a| !a.starts_with('%'))
             .collect();
 
-        if let Some((cmd, args)) = clean.split_first() {
-            Command::new(cmd).args(args).spawn()?;
+        if let Some((cmd, args)) = parts.split_first() {
+            Command::new(cmd)
+                .args(args)
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .process_group(0)
+                .spawn()?;
         }
         Ok(())
     }
@@ -84,9 +91,10 @@ fn load_icon(path: &Path, px: u32) -> Option<DynamicImage> {
 
 pub fn load_desktop_entries(picker: &Picker) -> Vec<AppEntry> {
     let mut apps = Vec::new();
+    let mut seen = std::collections::HashSet::new();
     let locales: &[&str] = &[];
     let icon_size = Size::new(4, 2);
-    let theme = detect_icon_theme(); // один раз, вне цикла
+    let theme = detect_icon_theme();
 
     for path in Iter::new(default_paths()) {
         let Ok(entry) = DesktopEntry::from_path(&path, None::<&[&str]>) else {
@@ -102,6 +110,10 @@ pub fn load_desktop_entries(picker: &Picker) -> Vec<AppEntry> {
         };
 
         if name.is_empty() || exec.is_empty() {
+            continue;
+        }
+
+        if !seen.insert(format!("{name}\0{exec}")) {
             continue;
         }
 
