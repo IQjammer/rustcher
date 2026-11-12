@@ -57,7 +57,9 @@ impl App {
 
     fn map_key_to_action(&self, key: KeyEvent) -> Action {
         match (key.modifiers, key.code) {
-            (KeyModifiers::NONE, KeyCode::Esc) => Action::Quit,
+            (KeyModifiers::NONE, KeyCode::Esc) | (KeyModifiers::CONTROL, KeyCode::Char('c')) => {
+                Action::Quit
+            }
             (KeyModifiers::NONE, KeyCode::Enter) => Action::Run,
             (KeyModifiers::NONE, KeyCode::Backspace) => Action::RemoveChar,
             (KeyModifiers::CONTROL, KeyCode::Char('j')) => Action::Down,
