@@ -62,7 +62,7 @@ impl App {
             (KeyModifiers::NONE, KeyCode::Backspace) => Action::RemoveChar,
             (KeyModifiers::CONTROL, KeyCode::Char('j')) => Action::Down,
             (KeyModifiers::CONTROL, KeyCode::Char('k')) => Action::Up,
-            (KeyModifiers::NONE, KeyCode::Char(c)) => Action::InsertChar(c),
+            (KeyModifiers::NONE | KeyModifiers::SHIFT, KeyCode::Char(c)) => Action::InsertChar(c),
             _ => Action::None,
         }
     }
