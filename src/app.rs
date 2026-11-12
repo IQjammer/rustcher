@@ -9,7 +9,6 @@ pub struct App {
     pub exit: bool,
     pub list: List,
     pub input: String,
-    pub picker: Picker,
     matcher: FuzzyMatcher,
 }
 
@@ -22,7 +21,6 @@ impl App {
             list: List::new(entries),
             input: String::new(),
             matcher: FuzzyMatcher::new(),
-            picker,
         }
     }
 
