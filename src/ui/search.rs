@@ -9,10 +9,10 @@ use ratatui::{
 pub fn render_search(input: &str, area: Rect, buf: &mut Buffer) {
     let block = Block::bordered()
         .border_set(border::THICK)
-        .title(" Sertch Ap ");
+        .title(" Rustcher ");
 
     let paragraph = if input.is_empty() {
-        Paragraph::new(" Type to Sertch ").style(Style::default().fg(Color::DarkGray))
+        Paragraph::new(" Type to Search ").style(Style::default().fg(Color::White))
     } else {
         Paragraph::new(format!("{input} "))
     };

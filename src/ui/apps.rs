@@ -10,6 +10,7 @@ use crate::{app::App, desktop::AppEntry, ui::list};
 pub fn render_apps(app: &App, area: Rect, buf: &mut Buffer) {
     let apps_block = Block::bordered()
         .title_top(" Apps ")
+        .title_bottom(" [ctrl]+[j/k] to up/down ")
         .border_set(border::THICK);
 
     let inner_area = apps_block.inner(area);
